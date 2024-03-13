@@ -15,32 +15,52 @@ import {
   Table,
 } from '@/components/ui/table';
 import {
-  PaginationPrevious,
-  PaginationItem,
-  PaginationLink,
-  PaginationEllipsis,
-  PaginationNext,
   PaginationContent,
   Pagination,
+  PaginationPages,
 } from '@/components/ui/pagination';
-import { SVGProps, useEffect } from 'react';
-import findUsers from '@/services/user/find';
+import { SVGProps, useEffect, useState } from 'react';
+import findUsers, { Sort } from '@/services/user/find';
+import { UserDto } from '@/services/user/dto/user.dto';
+import { ArrowUpDown, CheckCircle2, XCircle } from 'lucide-react';
 
 type TSVGElementProps = SVGProps<SVGSVGElement>;
 
 const UserList = () => {
+  const [users, setUsers] = useState<UserDto[]>([]);
+  const [page, setPage] = useState<number>(0);
+  const [sort, setSort] = useState<Sort>({ id: 'asc' });
+  const [totalPageNumber, setTotalPageNumber] = useState<number>(1);
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const data = await findUsers();
-        console.log(data);
+        const data = await findUsers({
+          page,
+          sort: Object.keys(sort)[0],
+          dir: Object.values(sort)[0],
+        });
+
+        setUsers(data.data);
+        setTotalPageNumber(Math.ceil(data.meta.count / data.meta.take));
       } catch (e) {
         console.log(e);
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [page, sort]);
+
+  const sortUsers = (key: string) => {
+    if (sort[key]) {
+      setSort({ [key]: sort[key] === 'asc' ? 'desc' : 'asc' });
+      return;
+    }
+
+    const _sort: Sort = { [key]: 'asc' };
+    setSort(_sort);
+  };
+
   return (
     <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-gray-100/40 lg:block">
@@ -95,60 +115,87 @@ const UserList = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[80px]">ID</TableHead>
-                  <TableHead className="max-w-[150px]">Username</TableHead>
-                  <TableHead className="hidden md:table-cell">Email</TableHead>
-                  <TableHead className="hidden md:table-cell">Role</TableHead>
+                  <TableHead
+                    className="w-[80px] cursor-pointer"
+                    onClick={() => sortUsers('id')}>
+                    <div className="flex justify-between">
+                      ID
+                      <ArrowUpDown size={16} />
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="hidden md:table-cell cursor-pointer align-middle grid-cols-1"
+                    onClick={() => sortUsers('email')}>
+                    <div className="flex justify-between">
+                      Email
+                      <ArrowUpDown size={16} />
+                    </div>
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    First Name
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    Last Name
+                  </TableHead>
+                  <TableHead
+                    className="hidden md:table-cell cursor-pointer"
+                    onClick={() => sortUsers('role')}>
+                    <div className="flex justify-between">
+                      Role
+                      <ArrowUpDown size={16} />
+                    </div>
+                  </TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow>
-                  <TableCell>1</TableCell>
-                  <TableCell className="font-medium">JohnDoe</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    johndoe@example.com
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">Admin</TableCell>
-                  <TableCell>Active</TableCell>
-                  <TableCell>
-                    <Button size="sm" variant="outline">
-                      View
-                    </Button>
-                    <Button className="ml-2" size="sm" variant="outline">
-                      Edit
-                    </Button>
-                    <Button className="ml-2" size="sm" variant="outline">
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                {users.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>{user.id}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {user.email}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {user.userAttributes.firstname}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {user.userAttributes.lastname}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {user.role}
+                    </TableCell>
+                    <TableCell>
+                      {user.active ? <CheckCircle2 /> : <XCircle />}
+                    </TableCell>
+                    <TableCell>
+                      <Button className="ml-2" size="sm" variant="outline">
+                        Edit
+                      </Button>
+                      <Button className="ml-2" size="sm" variant="outline">
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>
           <Pagination>
             <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious href="#" />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#">1</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#" isActive>
-                  2
-                </PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#">3</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext href="#" />
-              </PaginationItem>
+              <PaginationPages
+                totalPageNumber={totalPageNumber}
+                currentPage={page + 1}
+                onChangePage={(pageNumber) => setPage(pageNumber)}
+                onPreviousPage={() => {
+                  if (page === 0) return;
+                  setPage(page - 1);
+                }}
+                onNextPage={() => {
+                  if (page === totalPageNumber - 1) return;
+                  setPage(page + 1);
+                }}
+              />
             </PaginationContent>
           </Pagination>
         </main>

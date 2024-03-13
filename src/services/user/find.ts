@@ -1,6 +1,10 @@
 import { APIs, get } from '@/shared/http-service/httpService';
 import { FindUsersDto } from '@/services/user/dto/findUsers.dto';
 
+export type Sort = {
+  [key: string]: 'asc' | 'desc';
+};
+
 type FindUsersQueryData = {
   page?: number;
   limit?: number;
