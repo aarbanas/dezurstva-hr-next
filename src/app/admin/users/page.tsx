@@ -20,6 +20,11 @@ import { ArrowUpDown, CheckCircle2, SearchIcon, XCircle } from 'lucide-react';
 import AdminLayout from '@/shared/layouts/adminLayout';
 import Modal from '@/shared/modal/Modal';
 import { useUserList } from '@/services/auth/useUserList';
+import { UserDto } from '@/services/user/dto/user.dto';
+import { Role, Type } from '@/app/register/types';
+import { CertificateTypeEnum } from '@/app/profile/certificates/enums/certificate-types.enum';
+import { notifyUser } from '@/app/profile/certificates/services/certificates-service';
+import { toast } from 'react-toastify';
 
 const UserList = () => {
   const {
@@ -34,7 +39,27 @@ const UserList = () => {
     sortUsers,
     searchText,
     deleteUser,
-  } = useUserList({});
+  } = useUserList({ populateCertificates: true });
+
+  const handleNotifyUser = async (user: UserDto) => {
+    const certificateType = (): CertificateTypeEnum => {
+      switch (user.userAttributes.type) {
+        case Type.DOCTOR:
+        case Type.NURSE:
+          return CertificateTypeEnum.UNIVERSITY;
+        case Type.LIFEGUARD:
+          return CertificateTypeEnum.REDCROSS;
+      }
+    };
+
+    try {
+      await notifyUser(user.id, certificateType());
+      toast('Email successfully sent to user', { type: 'success' });
+    } catch (e) {
+      toast('Failed to send email to user', { type: 'error' });
+      console.error('Error notifying user:', e);
+    }
+  };
 
   return (
     <AdminLayout headerChildren={<AdminUserHeader searchText={searchText} />}>
@@ -94,6 +119,7 @@ const UserList = () => {
                     <ArrowUpDown size={16} />
                   </div>
                 </TableHead>
+                <TableHead>Certificate uploaded</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -113,6 +139,24 @@ const UserList = () => {
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     {user.active ? <CheckCircle2 /> : <XCircle />}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {user.userAttributes.certificates?.length ? (
+                      <CheckCircle2 />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <XCircle />{' '}
+                        {user.role === Role.USER && (
+                          <Button
+                            className="ml-2"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleNotifyUser(user)}>
+                            Notify via email
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Button className="ml-2" size="sm" variant="outline">

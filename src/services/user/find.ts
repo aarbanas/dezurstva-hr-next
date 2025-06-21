@@ -13,6 +13,7 @@ type FindUsersQueryData = {
   sort?: string;
   dir?: 'asc' | 'desc';
   filter?: object;
+  populateCertificates?: boolean;
 };
 
 const findUsers = async (data: FindUsersQueryData) => {
@@ -24,6 +25,8 @@ const findUsers = async (data: FindUsersQueryData) => {
     if (data.sort) searchParams.append(`sort`, data.sort);
     if (data.dir) searchParams.append(`dir`, data.dir);
     if (data.type) searchParams.append(`type`, data.type);
+    if (data.populateCertificates)
+      searchParams.append(`populateCertificates`, 'true');
     if (data.filter) {
       Object.entries(data.filter).forEach(([key, value]) => {
         searchParams.append(`filter[${key}]`, value);
