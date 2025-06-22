@@ -12,6 +12,7 @@ type UseUserListProps = {
   initialFilterKeys?: string | string[];
   initialPage?: number;
   initialRole?: Role;
+  populateCertificates?: boolean;
 };
 
 const prepareFilter = (filter: string, filterKeys: string | string[]) => {
@@ -32,6 +33,7 @@ export const useUserList = ({
   initialFilterKeys = 'email',
   initialPage = 0,
   initialRole = Role.USER,
+  populateCertificates = false,
 }: UseUserListProps) => {
   const [users, setUsers] = useState<UserDto[]>([]);
   const [page, setPage] = useState<number>(initialPage);
@@ -49,6 +51,7 @@ export const useUserList = ({
           sort: Object.keys(sort)[0],
           dir: Object.values(sort)[0],
           type: initialRole,
+          populateCertificates,
           ...(filter && { filter: prepareFilter(filter, initialFilterKeys) }),
         });
 

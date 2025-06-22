@@ -9,6 +9,7 @@ import {
   CertificateDto,
   CreateCertificateDto,
 } from '../models/certificate.model';
+import { CertificateTypeEnum } from '@/app/profile/certificates/enums/certificate-types.enum';
 
 const fetchCertificates = async (userId: number): Promise<CertificateDto[]> => {
   return get<CertificateDto[]>(`${APIs.CERTIFICATE}?userId=${userId}`);
@@ -53,10 +54,20 @@ const deleteCertificate = async (certificateId: number) => {
   await deleteRequest(`${APIs.CERTIFICATE}/${certificateId}`);
 };
 
+const notifyUser = async (
+  userId: number,
+  certificateType: CertificateTypeEnum
+) => {
+  const requestUrl = `${APIs.CERTIFICATE}/notify/${userId}`;
+
+  return post(requestUrl, { certificateType });
+};
+
 export {
   fetchCertificates,
   updateStatus,
   createCertificate,
   downloadCertificate,
   deleteCertificate,
+  notifyUser,
 };
