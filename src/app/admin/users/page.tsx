@@ -125,7 +125,12 @@ const UserList = () => {
             </TableHeader>
             <TableBody>
               {users.map((user) => (
-                <TableRow key={user.id}>
+                <TableRow
+                  key={user.id}
+                  style={{
+                    backgroundColor:
+                      user.role === Role.ADMIN ? 'rgba(255,0,0,0.49)' : 'white',
+                  }}>
                   <TableCell>{user.id}</TableCell>
                   <TableCell className="md:table-cell">{user.email}</TableCell>
                   <TableCell className="hidden md:table-cell">
@@ -135,7 +140,7 @@ const UserList = () => {
                     {user.userAttributes.lastname}
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
-                    {user.role}
+                    {user.userAttributes.type}
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     {user.active ? <CheckCircle2 /> : <XCircle />}
@@ -146,15 +151,19 @@ const UserList = () => {
                     ) : (
                       <div className="flex items-center gap-2">
                         <XCircle />{' '}
-                        {user.role === Role.USER && (
-                          <Button
-                            className="ml-2"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleNotifyUser(user)}>
-                            Notify via email
-                          </Button>
-                        )}
+                        {user.role === Role.USER &&
+                          user.createdAt &&
+                          new Date(user.createdAt).getTime() <=
+                            new Date().getTime() - 7 * 24 * 60 * 60 * 1000 && (
+                            <Button
+                              className="ml-2"
+                              size="sm"
+                              variant="outline"
+                              title={user.createdAt}
+                              onClick={() => handleNotifyUser(user)}>
+                              Notify via email
+                            </Button>
+                          )}
                       </div>
                     )}
                   </TableCell>
@@ -162,16 +171,18 @@ const UserList = () => {
                     <Button className="ml-2" size="sm" variant="outline">
                       <Link href={`users/profile/${user.id}`}>Edit</Link>
                     </Button>
-                    <Button
-                      className="ml-2"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setUserIdToDelete(user.id);
-                        setDialogOpen(true);
-                      }}>
-                      Delete
-                    </Button>
+                    {user.role === Role.USER && (
+                      <Button
+                        className="ml-2"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setUserIdToDelete(user.id);
+                          setDialogOpen(true);
+                        }}>
+                        Delete
+                      </Button>
+                    )}
                     {isDialogOpen && (
                       <Modal
                         isOpen={isDialogOpen}
