@@ -47,14 +47,14 @@ const PaginationPages: React.FC<PaginationProps> = ({
     if (totalPageNumber <= 10) {
       for (let i = 1; i <= totalPageNumber; i++) {
         pages.push(
-          <PaginationItem key={i} onClick={() => onChangePage(i)}>
+          <PaginationItem key={i} onClick={() => onChangePage(i - 1)}>
             <PaginationLink isActive={currentPage === i}>{i}</PaginationLink>
           </PaginationItem>
         );
       }
     } else {
       pages.push(
-        <PaginationItem key={1} onClick={() => onChangePage(1)}>
+        <PaginationItem key={1} onClick={() => onChangePage(0)}>
           <PaginationLink isActive={currentPage === 1}>1</PaginationLink>
         </PaginationItem>
       );
@@ -90,7 +90,7 @@ const PaginationPages: React.FC<PaginationProps> = ({
       for (let i = startPage; i <= endPage; i++) {
         if (i > 1 && i < totalPageNumber) {
           pages.push(
-            <PaginationItem key={i} onClick={() => onChangePage(i)}>
+            <PaginationItem key={i} onClick={() => onChangePage(i - 1)}>
               <PaginationLink isActive={currentPage === i}>{i}</PaginationLink>
             </PaginationItem>
           );
@@ -111,7 +111,7 @@ const PaginationPages: React.FC<PaginationProps> = ({
         pages.push(
           <PaginationItem
             key={totalPageNumber}
-            onClick={() => onChangePage(totalPageNumber)}>
+            onClick={() => onChangePage(totalPageNumber - 1)}>
             <PaginationLink isActive={currentPage === totalPageNumber}>
               {totalPageNumber}
             </PaginationLink>

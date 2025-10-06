@@ -89,7 +89,7 @@ const Organisations = () => {
                     <ArrowUpDown size={16} />
                   </div>
                 </TableHead>
-                <TableHead className="hidden  md:table-cell">Oib</TableHead>
+                <TableHead className="hidden md:table-cell">Oib</TableHead>
                 <TableHead
                   className="hidden cursor-pointer md:table-cell"
                   onClick={() => sortOrganisations('active')}>
