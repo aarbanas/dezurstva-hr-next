@@ -3,7 +3,18 @@ import type { NextRequest } from 'next/server';
 import { authAdminRoutes, authRoutes, protectedRoutes } from '@/routes/routes';
 import { jwtDecode } from 'jwt-decode';
 
+// Flip to false to take the site out of maintenance mode.
+const MAINTENANCE_MODE = true;
+
 export function middleware(request: NextRequest) {
+  if (MAINTENANCE_MODE) {
+    if (request.nextUrl.pathname !== '/maintenance') {
+      return NextResponse.redirect(new URL('/maintenance', request.url));
+    }
+
+    return NextResponse.next();
+  }
+
   const currentUser = request.cookies.get('currentUser')?.value;
 
   if (
@@ -44,4 +55,10 @@ const getRoleFromJWT = (token: string) => {
   if (!decodedToken) return null;
 
   return decodedToken.role;
+};
+
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|webp|ico)$).*)',
+  ],
 };
